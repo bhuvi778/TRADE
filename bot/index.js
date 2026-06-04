@@ -7,7 +7,7 @@ const { getState, clearState, STATES } = require('./stateManager');
 const { getMainKeyboard, getAdminKeyboard } = require('./keyboards/mainKeyboard');
 
 // Handlers
-const { handleStart, handleProfile, handleBalance, handleReferral, handleSupport, handleContactSupport, handleSupportMessage } = require('./handlers/userHandlers');
+const { handleStart, handleProfile, handleBalance, handleReferral, handleSupport, handleContactSupport, handleSupportMessage, handleAboutUs } = require('./handlers/userHandlers');
 const { handleDepositStart, handleDepositAmount, handleDepositTxHash, handleDepositHistory } = require('./handlers/depositHandlers');
 const { handleWithdrawStart, handleWithdrawAmount, handleWithdrawAddress, handleWithdrawalHistory } = require('./handlers/withdrawalHandlers');
 const { handleProfitHistory } = require('./handlers/profitHandlers');
@@ -57,6 +57,7 @@ const initializeBot = () => {
   // ============================================================
 
   bot.onText(/\/start(.*)/, (msg) => handleStart(bot, msg));
+  bot.onText(/\/about/, (msg) => handleAboutUs(bot, msg));
 
   bot.onText(/\/help/, async (msg) => {
     const isAdmin = isAdminTelegramId(msg.from.id);
@@ -212,6 +213,8 @@ ${isAdmin ? '\n🔐 *Admin Commands*\n/users — Manage users\n/deposits — Vie
         return handleReferral(bot, msg);
       case '📞 Support':
         return handleSupport(bot, msg);
+      case 'ℹ️ About Us':
+        return handleAboutUs(bot, msg);
       case '⚙️ Profile':
         return handleProfile(bot, msg);
 
@@ -276,6 +279,30 @@ ${isAdmin ? '\n🔐 *Admin Commands*\n/users — Manage users\n/deposits — Vie
 
       if (data === 'contact_support') {
         return handleContactSupport(bot, chatId, telegramId);
+      }
+
+      if (data === 'about_read_more') {
+        const { getAboutUsKeyboard } = require('./keyboards/inlineKeyboards');
+        const { ABOUT_TEXT_FULL } = require('./handlers/userHandlers');
+        await bot.editMessageText(ABOUT_TEXT_FULL, {
+          chat_id: chatId,
+          message_id: msg.message_id,
+          parse_mode: 'Markdown',
+          ...getAboutUsKeyboard(true)
+        }).catch(err => logger.error('Error expanding About text:', err));
+        return;
+      }
+
+      if (data === 'about_show_less') {
+        const { getAboutUsKeyboard } = require('./keyboards/inlineKeyboards');
+        const { ABOUT_TEXT_SHORT } = require('./handlers/userHandlers');
+        await bot.editMessageText(ABOUT_TEXT_SHORT, {
+          chat_id: chatId,
+          message_id: msg.message_id,
+          parse_mode: 'Markdown',
+          ...getAboutUsKeyboard(false)
+        }).catch(err => logger.error('Error collapsing About text:', err));
+        return;
       }
 
       if (data === 'referral_stats') {

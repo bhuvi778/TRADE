@@ -1,6 +1,6 @@
 const User = require('../../models/User');
 const { getMainKeyboard, getAdminKeyboard } = require('../keyboards/mainKeyboard');
-const { getReferralKeyboard, getSupportKeyboard } = require('../keyboards/inlineKeyboards');
+const { getReferralKeyboard, getSupportKeyboard, getAboutUsKeyboard } = require('../keyboards/inlineKeyboards');
 const { formatUserProfile, formatBalance, escapeMarkdown } = require('../../utils/formatters');
 const { processReferralRegistration, getReferralStats, getReferralUnlockInfo } = require('../../services/referralService');
 const { isAdminTelegramId } = require('../../middleware/adminAuth');
@@ -240,6 +240,32 @@ ${escapeMarkdown(message)}
   );
 };
 
+const ABOUT_TEXT_SHORT = `
+ℹ️ *About Growex Capital*
+━━━━━━━━━━━━━━━━━━━━
+Growex Capital is a Cyprus-based financial technology and digital asset trading company with over 8 years of experience in the cryptocurrency markets. Since our inception, we have focused on developing advanced trading strategies, risk management systems, and innovative investment solutions designed to capitalize on opportunities within the rapidly evolving digital asset ecosystem.
+`.trim();
+
+const ABOUT_TEXT_FULL = `
+ℹ️ *About Growex Capital*
+━━━━━━━━━━━━━━━━━━━━
+Growex Capital is a Cyprus-based financial technology and digital asset trading company with over 8 years of experience in the cryptocurrency markets. Since our inception, we have focused on developing advanced trading strategies, risk management systems, and innovative investment solutions designed to capitalize on opportunities within the rapidly evolving digital asset ecosystem.
+
+Over the years, our team has successfully navigated multiple market cycles, leveraging deep market expertise, data-driven decision-making, and cutting-edge technology to generate consistent performance across various market conditions.
+
+Today, Growex Capital is entering a new phase of global expansion. Our vision is to make the benefits of professional digital asset trading accessible to investors worldwide while fostering long-term partnerships built on transparency, trust, and shared growth.
+`.trim();
+
+/**
+ * Handle About Us button
+ */
+const handleAboutUs = async (bot, msg) => {
+  await bot.sendMessage(msg.chat.id, ABOUT_TEXT_SHORT, {
+    parse_mode: 'Markdown',
+    ...getAboutUsKeyboard(false)
+  });
+};
+
 module.exports = {
   handleStart,
   handleProfile,
@@ -247,5 +273,9 @@ module.exports = {
   handleReferral,
   handleSupport,
   handleContactSupport,
-  handleSupportMessage
+  handleSupportMessage,
+  handleAboutUs,
+  ABOUT_TEXT_SHORT,
+  ABOUT_TEXT_FULL
 };
+

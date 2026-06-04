@@ -8,7 +8,7 @@ const getMainKeyboard = () => ({
       [{ text: '🔒 Staking Plan' }, { text: '📈 Profit History' }],
       [{ text: '💸 Withdraw' }, { text: '🔓 Unstake' }],
       [{ text: '📜 Transactions' }, { text: '👥 Referral System' }],
-      [{ text: '📞 Support' }, { text: '⚙️ Profile' }]
+      [{ text: '📞 Support' }, { text: 'ℹ️ About Us' }, { text: '⚙️ Profile' }]
     ],
     resize_keyboard: true,
     persistent: true

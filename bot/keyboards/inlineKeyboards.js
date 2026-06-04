@@ -131,6 +131,21 @@ const getSupportKeyboard = () => ({
 });
 
 /**
+ * About Us keyboard
+ */
+const getAboutUsKeyboard = (expanded = false) => ({
+  reply_markup: {
+    inline_keyboard: [
+      [
+        expanded
+          ? { text: '🔼 Show Less', callback_data: 'about_show_less' }
+          : { text: '🔽 Read More', callback_data: 'about_read_more' }
+      ]
+    ]
+  }
+});
+
+/**
  * Admin profit type keyboard
  */
 const getProfitTypeKeyboard = () => ({
@@ -175,6 +190,8 @@ module.exports = {
   getPendingWithdrawalsKeyboard,
   getReferralKeyboard,
   getSupportKeyboard,
+  getAboutUsKeyboard,
   getProfitTypeKeyboard,
   getAdminUserKeyboard
 };
+
