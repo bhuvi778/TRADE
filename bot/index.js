@@ -436,8 +436,33 @@ ${isAdmin ? '\n🔐 *Admin Commands*\n/users — Manage users\n/deposits — Vie
   // ERROR HANDLING
   // ============================================================
 
-  bot.on('polling_error', (error) => {
-    logger.error('Telegram polling error:', error.message);
+  // ---- Auto-restart polling on error ----
+  let pollingRestartTimer = null;
+
+  bot.on('polling_error', async (error) => {
+    logger.error('Telegram polling error:', error.code, error.message);
+
+    // EFATAL = token invalid, don't restart
+    if (error.code === 'EFATAL') {
+      logger.error('Fatal polling error — check bot token!');
+      return;
+    }
+
+    // Debounce restart: wait 10s before restarting
+    if (!pollingRestartTimer) {
+      pollingRestartTimer = setTimeout(async () => {
+        pollingRestartTimer = null;
+        logger.warn('Attempting to restart polling...');
+        try {
+          await bot.stopPolling();
+          await new Promise(r => setTimeout(r, 3000));
+          await bot.startPolling({ restart: true });
+          logger.info('Polling restarted successfully.');
+        } catch (restartErr) {
+          logger.error('Failed to restart polling:', restartErr.message);
+        }
+      }, 10000);
+    }
   });
 
   bot.on('webhook_error', (error) => {

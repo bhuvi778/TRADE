@@ -1,4 +1,6 @@
 require('dotenv').config();
+const https = require('https');
+const http = require('http');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -113,10 +115,35 @@ const startServer = async () => {
       logger.info(`📡 Telegram bot active`);
     });
 
-    // Handle unhandled promise rejections
-    process.on('unhandledRejection', (err) => {
-      logger.error('Unhandled Promise Rejection:', err);
-      server.close(() => process.exit(1));
+    // ============================================================
+    // KEEP-ALIVE: Render free tier ko sleep hone se rokta hai
+    // Har 10 minutes mein apne /health endpoint ko ping karta hai
+    // ============================================================
+    const RENDER_URL = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL;
+    if (RENDER_URL && config.nodeEnv === 'production') {
+      const pingInterval = 10 * 60 * 1000; // 10 minutes
+      setInterval(() => {
+        const url = new URL(`${RENDER_URL}/health`);
+        const lib = url.protocol === 'https:' ? https : http;
+        const req = lib.get(url.href, (res) => {
+          logger.info(`[Keep-Alive] Ping sent → Status: ${res.statusCode}`);
+        });
+        req.on('error', (err) => {
+          logger.warn(`[Keep-Alive] Ping failed: ${err.message}`);
+        });
+        req.end();
+      }, pingInterval);
+      logger.info(`[Keep-Alive] Self-ping active every 10 min → ${RENDER_URL}`);
+    }
+
+    // Handle unhandled promise rejections — DO NOT exit, just log
+    process.on('unhandledRejection', (reason, promise) => {
+      logger.error('Unhandled Promise Rejection (bot will keep running):', reason);
+    });
+
+    // Handle uncaught exceptions — log and keep running
+    process.on('uncaughtException', (err) => {
+      logger.error('Uncaught Exception (bot will keep running):', err.message, err.stack);
     });
 
     // Graceful shutdown
